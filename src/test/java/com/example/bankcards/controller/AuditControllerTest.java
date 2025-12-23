@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 classes = JwtAuthenticationFilter.class
         )
 )
-@AutoConfigureMockMvc(addFilters = false) // Отключаем все фильтры безопасности
+@AutoConfigureMockMvc(addFilters = false)
 class AuditControllerTest {
 
     @Autowired
@@ -41,7 +41,6 @@ class AuditControllerTest {
 
     @Test
     void getAuditLogs_Success() throws Exception {
-        // Arrange
         AuditLog log1 = AuditLog.builder()
                 .id(1L)
                 .action("CREATE")
@@ -61,7 +60,6 @@ class AuditControllerTest {
         when(auditService.searchAuditLogs(any(), any(), any(), any(), any(), any()))
                 .thenReturn(page);
 
-        // Act & Assert
         mockMvc.perform(get("/api/admin/audit")
                         .param("userId", "1")
                         .param("action", "CREATE")
@@ -74,7 +72,6 @@ class AuditControllerTest {
 
     @Test
     void getUserAuditLogs_Success() throws Exception {
-        // Arrange
         AuditLog log = AuditLog.builder()
                 .id(1L)
                 .action("LOGIN")
@@ -86,7 +83,6 @@ class AuditControllerTest {
 
         when(auditService.getUserAuditLogs(anyLong(), any())).thenReturn(page);
 
-        // Act & Assert
         mockMvc.perform(get("/api/admin/audit/user/1")
                         .param("page", "0")
                         .param("size", "20"))

@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UserCardController.class)
-@AutoConfigureMockMvc(addFilters = false) // Отключаем все фильтры, включая Security
+@AutoConfigureMockMvc(addFilters = false)
 class UserCardControllerTest {
 
     @Autowired
@@ -52,7 +52,6 @@ class UserCardControllerTest {
 
     @Test
     void getUserCards_Success() throws Exception {
-        // Arrange
         Long userId = 1L;
 
         BankCardResponse card1 = BankCardResponse.builder()
@@ -73,7 +72,6 @@ class UserCardControllerTest {
 
         when(cardService.getUserCards(eq(userId), any(), any())).thenReturn(page);
 
-        // Act & Assert
         mockMvc.perform(get("/api/user/cards")
                         .param("page", "0")
                         .param("size", "10"))
@@ -86,11 +84,9 @@ class UserCardControllerTest {
 
     @Test
     void getTotalBalance_Success() throws Exception {
-        // Arrange
         Long userId = 1L;
         when(cardService.getTotalBalance(userId)).thenReturn(BigDecimal.valueOf(1500.50));
 
-        // Act & Assert
         mockMvc.perform(get("/api/user/cards/balance/total"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("1500.5"));
@@ -98,7 +94,6 @@ class UserCardControllerTest {
 
     @Test
     void transferBetweenCards_Success() throws Exception {
-        // Arrange
         Long userId = 1L;
         CardTransferRequest request = new CardTransferRequest();
         request.setFromCardId(1L);
@@ -107,7 +102,6 @@ class UserCardControllerTest {
 
         doNothing().when(cardService).transferBetweenCards(any(CardTransferRequest.class), eq(userId));
 
-        // Act & Assert
         mockMvc.perform(post("/api/user/cards/transfer")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -118,13 +112,11 @@ class UserCardControllerTest {
 
     @Test
     void requestBlockCard_Success() throws Exception {
-        // Arrange
         Long userId = 1L;
         Long cardId = 1L;
 
         doNothing().when(cardService).requestBlockCard(cardId, userId);
 
-        // Act & Assert
         mockMvc.perform(post("/api/user/cards/{cardId}/block", cardId))
                 .andExpect(status().isAccepted());
 
@@ -133,13 +125,11 @@ class UserCardControllerTest {
 
     @Test
     void activateCard_Success() throws Exception {
-        // Arrange
         Long userId = 1L;
         Long cardId = 1L;
 
         doNothing().when(cardService).activateCard(cardId, userId);
 
-        // Act & Assert
         mockMvc.perform(post("/api/user/cards/{cardId}/activate", cardId))
                 .andExpect(status().isOk());
 

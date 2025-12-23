@@ -83,7 +83,6 @@ class CardServiceUnitTest {
 
     @Test
     void createCard_Success() {
-        // Arrange
         CreateCardRequest request = new CreateCardRequest();
         request.setCardHolder("John Doe");
         request.setUserId(1L);
@@ -93,10 +92,8 @@ class CardServiceUnitTest {
         when(encryptionService.maskCardNumber(any())).thenReturn("**** **** **** 5678");
         when(cardRepository.save(any())).thenReturn(testCard);
 
-        // Act
         Card result = cardService.createCard(request, 1L);
 
-        // Assert
         assertNotNull(result);
         assertEquals(testCard.getId(), result.getId());
         verify(userRepository, times(1)).findById(1L);
@@ -106,19 +103,16 @@ class CardServiceUnitTest {
 
     @Test
     void createCard_UserNotFound() {
-        // Arrange
         CreateCardRequest request = new CreateCardRequest();
         request.setUserId(999L);
         when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(UserNotFoundException.class, () ->
                 cardService.createCard(request, 999L));
     }
 
     @Test
     void transferBetweenCards_Success() {
-        // Arrange
         CardTransferRequest request = new CardTransferRequest();
         request.setFromCardId(1L);
         request.setToCardId(2L);
@@ -144,10 +138,8 @@ class CardServiceUnitTest {
                 .thenReturn(Optional.of(toCard));
         when(transactionRepository.save(any())).thenReturn(testTransaction);
 
-        // Act
         cardService.transferBetweenCards(request, 1L);
 
-        // Assert
         verify(cardRepository, times(2)).save(any());
         verify(transactionRepository, times(1)).save(any());
         assertEquals(new BigDecimal("900.00"), fromCard.getBalance());
@@ -157,7 +149,6 @@ class CardServiceUnitTest {
 
     @Test
     void transferBetweenCards_InsufficientFunds() {
-        // Arrange
         CardTransferRequest request = new CardTransferRequest();
         request.setFromCardId(1L);
         request.setToCardId(2L);
@@ -182,7 +173,6 @@ class CardServiceUnitTest {
         when(cardRepository.findByIdAndUserId(2L, 1L))
                 .thenReturn(Optional.of(toCard));
 
-        // Act & Assert
         assertThrows(InsufficientFundsException.class, () ->
                 cardService.transferBetweenCards(request, 1L));
 
@@ -191,7 +181,6 @@ class CardServiceUnitTest {
 
     @Test
     void transferBetweenCards_CardNotFound() {
-        // Arrange
         CardTransferRequest request = new CardTransferRequest();
         request.setFromCardId(1L);
         request.setToCardId(2L);
@@ -200,14 +189,12 @@ class CardServiceUnitTest {
         when(cardRepository.findByIdAndUserId(1L, 1L))
                 .thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(com.example.bankcards.exception.CardNotFoundException.class, () ->
                 cardService.transferBetweenCards(request, 1L));
     }
 
     @Test
     void blockCardByAdmin_Success() {
-        // Arrange
         Card activeCard = Card.builder()
                 .id(1L)
                 .status(Card.CardStatus.ACTIVE)
@@ -217,10 +204,8 @@ class CardServiceUnitTest {
 
         when(cardRepository.findById(1L)).thenReturn(Optional.of(activeCard));
 
-        // Act
         cardService.blockCardByAdmin(1L);
 
-        // Assert
         assertEquals(Card.CardStatus.BLOCKED, activeCard.getStatus());
         assertNotNull(activeCard.getUpdatedAt());
         verify(cardRepository, times(1)).save(activeCard);
@@ -229,7 +214,6 @@ class CardServiceUnitTest {
 
     @Test
     void blockCardByAdmin_CardAlreadyBlocked() {
-        // Arrange
         Card blockedCard = Card.builder()
                 .id(1L)
                 .status(Card.CardStatus.BLOCKED)
@@ -237,10 +221,8 @@ class CardServiceUnitTest {
 
         when(cardRepository.findById(1L)).thenReturn(Optional.of(blockedCard));
 
-        // Act
         cardService.blockCardByAdmin(1L);
 
-        // Assert
         assertEquals(Card.CardStatus.BLOCKED, blockedCard.getStatus());
         verify(cardRepository, never()).save(any());
         verify(auditService, never()).logAction(any(), any(), any(), any());
@@ -248,7 +230,6 @@ class CardServiceUnitTest {
 
     @Test
     void activateCardByAdmin_Success() {
-        // Arrange
         Card blockedCard = Card.builder()
                 .id(1L)
                 .status(Card.CardStatus.BLOCKED)
@@ -259,10 +240,8 @@ class CardServiceUnitTest {
 
         when(cardRepository.findById(1L)).thenReturn(Optional.of(blockedCard));
 
-        // Act
         cardService.activateCardByAdmin(1L);
 
-        // Assert
         assertEquals(Card.CardStatus.ACTIVE, blockedCard.getStatus());
         assertNotNull(blockedCard.getUpdatedAt());
         verify(cardRepository, times(1)).save(blockedCard);
@@ -271,51 +250,40 @@ class CardServiceUnitTest {
 
     @Test
     void getTotalBalance_Success() {
-        // Arrange
         when(cardRepository.getTotalBalanceByUserId(1L))
                 .thenReturn(new BigDecimal("1500.00"));
 
-        // Act
         BigDecimal result = cardService.getTotalBalance(1L);
 
-        // Assert
         assertEquals(new BigDecimal("1500.00"), result);
         verify(auditService, times(1)).logAction(any(), any());
     }
 
     @Test
     void getTotalBalance_ZeroBalance() {
-        // Arrange
         when(cardRepository.getTotalBalanceByUserId(1L))
                 .thenReturn(null);
 
-        // Act
         BigDecimal result = cardService.getTotalBalance(1L);
 
-        // Assert
         assertEquals(BigDecimal.ZERO, result);
         verify(auditService, times(1)).logAction(any(), any());
     }
 
     @Test
     void deleteCard_Success() {
-        // Arrange
         when(cardRepository.findById(1L)).thenReturn(Optional.of(testCard));
 
-        // Act
         cardService.deleteCard(1L);
 
-        // Assert
         verify(cardRepository, times(1)).deleteById(1L);
         verify(auditService, times(1)).logAction(any(), any(), any(), any());
     }
 
     @Test
     void deleteCard_CardNotFound() {
-        // Arrange
         when(cardRepository.findById(1L)).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(com.example.bankcards.exception.CardNotFoundException.class, () ->
                 cardService.deleteCard(1L));
 
@@ -325,10 +293,8 @@ class CardServiceUnitTest {
 
     @Test
     void generateCardNumber_ValidFormat() {
-        // Act
         String cardNumber = cardService.generateCardNumber();
 
-        // Assert
         assertNotNull(cardNumber);
         assertEquals(16, cardNumber.length());
         assertTrue(cardNumber.matches("\\d{16}"));
@@ -336,10 +302,8 @@ class CardServiceUnitTest {
 
     @Test
     void generateCVV_ValidFormat() {
-        // Act
         String cvv = cardService.generateCVV();
 
-        // Assert
         assertNotNull(cvv);
         assertEquals(3, cvv.length());
         assertTrue(cvv.matches("\\d{3}"));

@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 classes = JwtAuthenticationFilter.class
         )
 )
-@AutoConfigureMockMvc(addFilters = false) // Это отключит CSRF и другие фильтры безопасности
+@AutoConfigureMockMvc(addFilters = false)
 class AuthControllerTest {
 
     @Autowired

@@ -88,13 +88,11 @@ class CardServiceIntegrationTest {
 
     @Test
     void transferBetweenCards_IntegrationTest() {
-        // Arrange
         CardTransferRequest request = new CardTransferRequest();
         request.setFromCardId(card1.getId());
         request.setToCardId(card2.getId());
         request.setAmount(new BigDecimal("200.00"));
 
-        // Act
         cardService.transferBetweenCards(request, testUser.getId());
 
         var updatedCard1 = cardRepository.findById(card1.getId());
@@ -109,19 +107,15 @@ class CardServiceIntegrationTest {
 
     @Test
     void getTotalBalance_IntegrationTest() {
-        // Act
         BigDecimal totalBalance = cardService.getTotalBalance(testUser.getId());
 
-        // Assert
         assertEquals(new BigDecimal("1500.00"), totalBalance);
     }
 
     @Test
     void blockCardByAdmin_IntegrationTest() {
-        // Act
         cardService.blockCardByAdmin(card1.getId());
 
-        // Assert
         var blockedCard = cardRepository.findById(card1.getId());
         assertTrue(blockedCard.isPresent());
         assertEquals(Card.CardStatus.BLOCKED, blockedCard.get().getStatus());

@@ -33,8 +33,8 @@ logging:
     liquibase: INFO
 
 jwt:
-  secret: your-secret-key-change-in-production
+  secret: nmVx9H4tsqsY5qEW2+azmKmdq+Y/OltP0C+skqox30s=
   expiration: 86400000
 
 encryption:
-  key: your-encryption-key-32-chars
+  key: abcdefghijklmnopqrstuvwxyz123456
