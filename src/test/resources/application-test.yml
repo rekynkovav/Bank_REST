@@ -1,0 +1,16 @@
+app:
+  encryption:
+    key: "0123456789abcdef0123456789abcdef"
+
+spring:
+  liquibase:
+    enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:

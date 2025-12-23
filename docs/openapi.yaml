@@ -1,0 +1,28 @@
+openapi: 3.0.3
+info:
+  title: Bank Card Management System API
+  version: 1.0.0
+  description: API для управления банковскими картами
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /api/user/cards:
+    get:
+      tags:
+        - User Cards
+      summary: Получить список карт пользователя
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BankCardResponse'
