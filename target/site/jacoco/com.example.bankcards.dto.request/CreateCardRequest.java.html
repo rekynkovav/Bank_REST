@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CreateCardRequest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Bank Card Management System</a> &gt; <a href="index.source.html" class="el_package">com.example.bankcards.dto.request</a> &gt; <span class="el_source">CreateCardRequest.java</span></div><h1>CreateCardRequest.java</h1><pre class="source lang-java linenums">package com.example.bankcards.dto.request;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.CreditCardNumber;
+
+import java.math.BigDecimal;
+import java.time.YearMonth;
+
+<span class="pc bnc" id="L14" title="All 54 branches missed.">@Data</span>
+<span class="pc bfc" id="L15" title="All 2 branches covered.">@Builder</span>
+<span class="fc" id="L16">@NoArgsConstructor</span>
+<span class="fc" id="L17">@AllArgsConstructor</span>
+public class CreateCardRequest {
+
+    @NotBlank(message = &quot;Card holder is required&quot;)
+    @Size(min = 2, max = 100, message = &quot;Card holder must be between 2 and 100 characters&quot;)
+<span class="fc" id="L22">    private String cardHolder;</span>
+
+    @NotBlank(message = &quot;Card number is required&quot;)
+    @Pattern(regexp = &quot;^[0-9]{16}$&quot;, message = &quot;Card number must be 16 digits&quot;)
+<span class="fc" id="L26">    private String cardNumber;</span>
+
+    @NotNull(message = &quot;Expiry date is required&quot;)
+    @Future(message = &quot;Card must not be expired&quot;)
+    @JsonFormat(pattern = &quot;MM/yy&quot;)
+<span class="fc" id="L31">    private YearMonth expiryDate;</span>
+
+    @NotBlank(message = &quot;CVV is required&quot;)
+    @Pattern(regexp = &quot;^[0-9]{3,4}$&quot;, message = &quot;CVV must be 3 or 4 digits&quot;)
+<span class="fc" id="L35">    private String cvv;</span>
+
+    @DecimalMin(value = &quot;0.0&quot;, message = &quot;Balance cannot be negative&quot;)
+    @Builder.Default
+<span class="fc" id="L39">    private BigDecimal balance = BigDecimal.ZERO;</span>
+
+    @NotNull(message = &quot;User ID is required&quot;)
+<span class="fc" id="L42">    private Long userId;</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

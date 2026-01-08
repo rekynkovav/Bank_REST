@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CardTransaction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Bank Card Management System</a> &gt; <a href="index.source.html" class="el_package">com.example.bankcards.entity</a> &gt; <span class="el_source">CardTransaction.java</span></div><h1>CardTransaction.java</h1><pre class="source lang-java linenums">package com.example.bankcards.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = &quot;card_transactions&quot;)
+<span class="nc bnc" id="L25" title="All 54 branches missed.">@Data</span>
+<span class="fc" id="L26">@NoArgsConstructor</span>
+<span class="fc" id="L27">@AllArgsConstructor</span>
+<span class="pc" id="L28">@Builder</span>
+public class CardTransaction {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+<span class="fc" id="L33">    private Long id;</span>
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;from_card_id&quot;)
+<span class="nc" id="L37">    private Card fromCard;</span>
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;to_card_id&quot;)
+<span class="nc" id="L41">    private Card toCard;</span>
+
+    @Column(nullable = false, precision = 15, scale = 2)
+<span class="nc" id="L44">    private BigDecimal amount;</span>
+
+    @Column(name = &quot;transaction_date&quot;)
+<span class="nc" id="L47">    private LocalDateTime transactionDate;</span>
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+<span class="nc" id="L51">    private TransactionStatus status;</span>
+
+    @PrePersist
+    protected void onCreate() {
+<span class="fc" id="L55">        transactionDate = LocalDateTime.now();</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        if (status == null) {</span>
+<span class="nc" id="L57">            status = TransactionStatus.SUCCESS;</span>
+        }
+<span class="fc" id="L59">    }</span>
+
+<span class="fc" id="L61">    public enum TransactionStatus {</span>
+<span class="fc" id="L62">        SUCCESS, FAILED, PENDING</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

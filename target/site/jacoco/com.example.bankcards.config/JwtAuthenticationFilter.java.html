@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtAuthenticationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Bank Card Management System</a> &gt; <a href="index.source.html" class="el_package">com.example.bankcards.config</a> &gt; <span class="el_source">JwtAuthenticationFilter.java</span></div><h1>JwtAuthenticationFilter.java</h1><pre class="source lang-java linenums">package com.example.bankcards.config;
+
+import com.example.bankcards.service.JwtService;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+
+@Component
+<span class="fc" id="L22">@RequiredArgsConstructor</span>
+<span class="fc" id="L23">@Slf4j</span>
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private final JwtService jwtService;
+    private final UserDetailsService userDetailsService;
+
+    @Override
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
+    ) throws ServletException, IOException {
+
+<span class="nc" id="L36">        final String path = request.getServletPath();</span>
+
+<span class="nc" id="L38">        log.debug(&quot;Processing request to path: {}&quot;, path);</span>
+
+<span class="nc bnc" id="L40" title="All 2 branches missed.">        if (path.startsWith(&quot;/api/auth/&quot;) ||</span>
+<span class="nc bnc" id="L41" title="All 2 branches missed.">            path.startsWith(&quot;/swagger-ui/&quot;) ||</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">            path.startsWith(&quot;/v3/api-docs/&quot;)) {</span>
+<span class="nc" id="L43">            filterChain.doFilter(request, response);</span>
+<span class="nc" id="L44">            return;</span>
+        }
+
+<span class="nc" id="L47">        final String authHeader = request.getHeader(&quot;Authorization&quot;);</span>
+
+<span class="nc bnc" id="L49" title="All 4 branches missed.">        if (authHeader == null || !authHeader.startsWith(&quot;Bearer &quot;)) {</span>
+<span class="nc" id="L50">            log.debug(&quot;No valid Authorization header found for path: {}&quot;, path);</span>
+<span class="nc" id="L51">            filterChain.doFilter(request, response);</span>
+<span class="nc" id="L52">            return;</span>
+        }
+
+<span class="nc" id="L55">        final String jwt = authHeader.substring(7);</span>
+
+        try {
+<span class="nc" id="L58">            final String username = jwtService.extractUsername(jwt);</span>
+<span class="nc" id="L59">            log.debug(&quot;Extracted username from JWT: {}&quot;, username);</span>
+
+<span class="nc bnc" id="L61" title="All 4 branches missed.">            if (username != null &amp;&amp; SecurityContextHolder.getContext().getAuthentication() == null) {</span>
+<span class="nc" id="L62">                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);</span>
+
+<span class="nc bnc" id="L64" title="All 2 branches missed.">                if (jwtService.isTokenValid(jwt, userDetails)) {</span>
+<span class="nc" id="L65">                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(</span>
+                            userDetails,
+                            null,
+<span class="nc" id="L68">                            userDetails.getAuthorities()</span>
+                    );
+<span class="nc" id="L70">                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));</span>
+<span class="nc" id="L71">                    SecurityContextHolder.getContext().setAuthentication(authToken);</span>
+<span class="nc" id="L72">                    log.debug(&quot;Authentication set for user: {}&quot;, username);</span>
+<span class="nc" id="L73">                } else {</span>
+<span class="nc" id="L74">                    log.debug(&quot;Invalid JWT token for user: {}&quot;, username);</span>
+                }
+            }
+<span class="nc" id="L77">        } catch (Exception e) {</span>
+<span class="nc" id="L78">            log.error(&quot;Error processing JWT token&quot;, e);</span>
+<span class="nc" id="L79">        }</span>
+<span class="nc" id="L80">        filterChain.doFilter(request, response);</span>
+<span class="nc" id="L81">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

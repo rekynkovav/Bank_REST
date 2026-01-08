@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GlobalExceptionHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Bank Card Management System</a> &gt; <a href="index.source.html" class="el_package">com.example.bankcards.exception</a> &gt; <span class="el_source">GlobalExceptionHandler.java</span></div><h1>GlobalExceptionHandler.java</h1><pre class="source lang-java linenums">package com.example.bankcards.exception;
+
+import lombok.Builder;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+@RestControllerAdvice
+<span class="fc" id="L18">@Slf4j</span>
+<span class="fc" id="L19">public class GlobalExceptionHandler {</span>
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity&lt;ErrorResponse&gt; handleAllExceptions(Exception ex) {
+<span class="nc" id="L23">        log.error(&quot;Unhandled exception: &quot;, ex);</span>
+
+<span class="nc" id="L25">        ErrorResponse error = ErrorResponse.builder()</span>
+<span class="nc" id="L26">                .timestamp(LocalDateTime.now())</span>
+<span class="nc" id="L27">                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())</span>
+<span class="nc" id="L28">                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())</span>
+<span class="nc" id="L29">                .message(&quot;Internal server error. Please try again later.&quot;)</span>
+<span class="nc" id="L30">                .build();</span>
+<span class="nc" id="L31">        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);</span>
+    }
+
+    @ExceptionHandler({
+            CardNotFoundException.class,
+            UserNotFoundException.class
+    })
+    public ResponseEntity&lt;ErrorResponse&gt; handleNotFoundException(RuntimeException ex) {
+<span class="nc" id="L39">        log.warn(&quot;Resource not found: {}&quot;, ex.getMessage());</span>
+<span class="nc" id="L40">        ErrorResponse error = ErrorResponse.builder()</span>
+<span class="nc" id="L41">                .timestamp(LocalDateTime.now())</span>
+<span class="nc" id="L42">                .status(HttpStatus.NOT_FOUND.value())</span>
+<span class="nc" id="L43">                .error(HttpStatus.NOT_FOUND.getReasonPhrase())</span>
+<span class="nc" id="L44">                .message(ex.getMessage())</span>
+<span class="nc" id="L45">                .build();</span>
+<span class="nc" id="L46">        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);</span>
+    }
+
+    @ExceptionHandler({
+            InsufficientFundsException.class,
+            CardOperationException.class
+    })
+    public ResponseEntity&lt;ErrorResponse&gt; handleBadRequestException(RuntimeException ex) {
+<span class="nc" id="L54">        log.warn(&quot;Bad request: {}&quot;, ex.getMessage());</span>
+<span class="nc" id="L55">        ErrorResponse error = ErrorResponse.builder()</span>
+<span class="nc" id="L56">                .timestamp(LocalDateTime.now())</span>
+<span class="nc" id="L57">                .status(HttpStatus.BAD_REQUEST.value())</span>
+<span class="nc" id="L58">                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())</span>
+<span class="nc" id="L59">                .message(ex.getMessage())</span>
+<span class="nc" id="L60">                .build();</span>
+<span class="nc" id="L61">        return ResponseEntity.badRequest().body(error);</span>
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity&lt;ErrorResponse&gt; handleAccessDeniedException(AccessDeniedException ex) {
+<span class="nc" id="L66">        log.warn(&quot;Access denied: {}&quot;, ex.getMessage());</span>
+<span class="nc" id="L67">        ErrorResponse error = ErrorResponse.builder()</span>
+<span class="nc" id="L68">                .timestamp(LocalDateTime.now())</span>
+<span class="nc" id="L69">                .status(HttpStatus.FORBIDDEN.value())</span>
+<span class="nc" id="L70">                .error(HttpStatus.FORBIDDEN.getReasonPhrase())</span>
+<span class="nc" id="L71">                .message(&quot;Access denied&quot;)</span>
+<span class="nc" id="L72">                .build();</span>
+<span class="nc" id="L73">        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);</span>
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity&lt;Map&lt;String, String&gt;&gt; handleValidationExceptions(
+            MethodArgumentNotValidException ex) {
+<span class="fc" id="L79">        log.warn(&quot;Validation failed: {}&quot;, ex.getBindingResult().getFieldErrors());</span>
+<span class="fc" id="L80">        Map&lt;String, String&gt; errors = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L81">        ex.getBindingResult().getFieldErrors().forEach(error -&gt;</span>
+<span class="fc" id="L82">                errors.put(error.getField(), error.getDefaultMessage()));</span>
+<span class="fc" id="L83">        return ResponseEntity.badRequest().body(errors);</span>
+    }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity&lt;ErrorResponse&gt; handleUserAlreadyExistsException(UserAlreadyExistsException ex) {
+<span class="nc" id="L88">        log.warn(&quot;User already exists: {}&quot;, ex.getMessage());</span>
+<span class="nc" id="L89">        ErrorResponse error = ErrorResponse.builder()</span>
+<span class="nc" id="L90">                .timestamp(LocalDateTime.now())</span>
+<span class="nc" id="L91">                .status(HttpStatus.CONFLICT.value())</span>
+<span class="nc" id="L92">                .error(HttpStatus.CONFLICT.getReasonPhrase())</span>
+<span class="nc" id="L93">                .message(ex.getMessage())</span>
+<span class="nc" id="L94">                .build();</span>
+<span class="nc" id="L95">        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);</span>
+    }
+}
+
+<span class="nc bnc" id="L99" title="All 32 branches missed.">@Data</span>
+<span class="nc" id="L100">@Builder</span>
+class ErrorResponse {
+<span class="nc" id="L102">    private LocalDateTime timestamp;</span>
+<span class="nc" id="L103">    private int status;</span>
+<span class="nc" id="L104">    private String error;</span>
+<span class="nc" id="L105">    private String message;</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

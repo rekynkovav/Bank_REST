@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuditService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Bank Card Management System</a> &gt; <a href="index.source.html" class="el_package">com.example.bankcards.service</a> &gt; <span class="el_source">AuditService.java</span></div><h1>AuditService.java</h1><pre class="source lang-java linenums">package com.example.bankcards.service;
+
+import com.example.bankcards.entity.AuditLog;
+import com.example.bankcards.entity.CustomUserDetails;
+import com.example.bankcards.entity.User;
+import com.example.bankcards.repository.AuditLogRepository;
+import com.example.bankcards.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import java.time.LocalDateTime;
+
+@Service
+<span class="fc" id="L24">@RequiredArgsConstructor</span>
+<span class="fc" id="L25">@Slf4j</span>
+public class AuditService {
+
+    private final AuditLogRepository auditLogRepository;
+    private final UserRepository userRepository;
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logAction(String action, String entityType, Long entityId, String details) {
+        try {
+<span class="fc" id="L34">            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();</span>
+<span class="fc" id="L35">            User user = null;</span>
+
+<span class="pc bpc" id="L37" title="1 of 4 branches missed.">            if (authentication != null &amp;&amp; authentication.getPrincipal() instanceof CustomUserDetails) {</span>
+<span class="fc" id="L38">                var userDetails = (CustomUserDetails) authentication.getPrincipal();</span>
+<span class="fc" id="L39">                user = userRepository.findById(userDetails.getId()).orElse(null);</span>
+            }
+
+<span class="fc" id="L42">            String ipAddress = getClientIp();</span>
+<span class="fc" id="L43">            String userAgent = getUserAgent();</span>
+
+<span class="fc" id="L45">            AuditLog auditLog = AuditLog.builder()</span>
+<span class="fc" id="L46">                    .action(action)</span>
+<span class="fc" id="L47">                    .entityType(entityType)</span>
+<span class="fc" id="L48">                    .entityId(entityId)</span>
+<span class="fc" id="L49">                    .details(details)</span>
+<span class="fc" id="L50">                    .user(user)</span>
+<span class="fc" id="L51">                    .ipAddress(ipAddress)</span>
+<span class="fc" id="L52">                    .userAgent(userAgent)</span>
+<span class="fc" id="L53">                    .createdAt(LocalDateTime.now())</span>
+<span class="fc" id="L54">                    .build();</span>
+
+<span class="fc" id="L56">            auditLogRepository.save(auditLog);</span>
+<span class="fc" id="L57">            log.debug(&quot;Audit log saved: {} - {} - {}&quot;, action, entityType, entityId);</span>
+
+<span class="nc" id="L59">        } catch (Exception e) {</span>
+<span class="nc" id="L60">            log.error(&quot;Failed to save audit log: {} - {}&quot;, action, entityType, e);</span>
+<span class="fc" id="L61">        }</span>
+<span class="fc" id="L62">    }</span>
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logAction(String action, String entityType, Long entityId) {
+<span class="nc" id="L66">        logAction(action, entityType, entityId, null);</span>
+<span class="nc" id="L67">    }</span>
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void logAction(String action, String details) {
+<span class="fc" id="L71">        logAction(action, null, null, details);</span>
+<span class="fc" id="L72">    }</span>
+
+    @Transactional(readOnly = true)
+    public Page&lt;AuditLog&gt; getAuditLogs(Pageable pageable) {
+<span class="nc" id="L76">        return auditLogRepository.findAll(pageable);</span>
+    }
+
+    @Transactional(readOnly = true)
+    public Page&lt;AuditLog&gt; getUserAuditLogs(Long userId, Pageable pageable) {
+<span class="nc" id="L81">        return auditLogRepository.findByUserId(userId, pageable);</span>
+    }
+
+    @Transactional(readOnly = true)
+    public Page&lt;AuditLog&gt; searchAuditLogs(
+            Long userId,
+            String action,
+            String entityType,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            Pageable pageable) {
+
+<span class="nc bnc" id="L93" title="All 2 branches missed.">        if (endDate == null) {</span>
+<span class="nc" id="L94">            endDate = LocalDateTime.now();</span>
+        }
+<span class="nc bnc" id="L96" title="All 2 branches missed.">        if (startDate == null) {</span>
+<span class="nc" id="L97">            startDate = endDate.minusMonths(1);</span>
+        }
+
+<span class="nc" id="L100">        return auditLogRepository.searchLogs(</span>
+                userId, action, entityType, startDate, endDate, pageable);
+    }
+
+    private String getClientIp() {
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes)
+<span class="fc" id="L107">                    RequestContextHolder.getRequestAttributes();</span>
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">            if (attributes != null) {</span>
+<span class="fc" id="L109">                HttpServletRequest request = attributes.getRequest();</span>
+
+<span class="fc" id="L111">                String xForwardedFor = request.getHeader(&quot;X-Forwarded-For&quot;);</span>
+<span class="pc bpc" id="L112" title="3 of 4 branches missed.">                if (xForwardedFor != null &amp;&amp; !xForwardedFor.isEmpty()) {</span>
+<span class="nc" id="L113">                    return xForwardedFor.split(&quot;,&quot;)[0].trim();</span>
+                }
+
+<span class="fc" id="L116">                return request.getRemoteAddr();</span>
+            }
+<span class="nc" id="L118">        } catch (Exception e) {</span>
+<span class="nc" id="L119">            log.warn(&quot;Could not get client IP&quot;, e);</span>
+<span class="nc" id="L120">        }</span>
+<span class="nc" id="L121">        return &quot;unknown&quot;;</span>
+    }
+
+    private String getUserAgent() {
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes)
+<span class="fc" id="L127">                    RequestContextHolder.getRequestAttributes();</span>
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">            if (attributes != null) {</span>
+<span class="fc" id="L129">                HttpServletRequest request = attributes.getRequest();</span>
+<span class="fc" id="L130">                return request.getHeader(&quot;User-Agent&quot;);</span>
+            }
+<span class="nc" id="L132">        } catch (Exception e) {</span>
+<span class="nc" id="L133">            log.warn(&quot;Could not get user agent&quot;, e);</span>
+<span class="nc" id="L134">        }</span>
+<span class="nc" id="L135">        return &quot;unknown&quot;;</span>
+    }
+
+<span class="nc" id="L138">    public static class Actions {</span>
+        public static final String USER_REGISTERED = &quot;USER_REGISTERED&quot;;
+        public static final String USER_LOGIN = &quot;USER_LOGIN&quot;;
+        public static final String USER_LOGOUT = &quot;USER_LOGOUT&quot;;
+        public static final String CARD_CREATED = &quot;CARD_CREATED&quot;;
+        public static final String CARD_BLOCKED = &quot;CARD_BLOCKED&quot;;
+        public static final String CARD_ACTIVATED = &quot;CARD_ACTIVATED&quot;;
+        public static final String CARD_DELETED = &quot;CARD_DELETED&quot;;
+        public static final String TRANSFER_COMPLETED = &quot;TRANSFER_COMPLETED&quot;;
+        public static final String TRANSFER_FAILED = &quot;TRANSFER_FAILED&quot;;
+        public static final String BALANCE_CHECKED = &quot;BALANCE_CHECKED&quot;;
+        public static final String PROFILE_UPDATED = &quot;PROFILE_UPDATED&quot;;
+        public static final String PASSWORD_CHANGED = &quot;PASSWORD_CHANGED&quot;;
+        public static final String ADMIN_ACTION = &quot;ADMIN_ACTION&quot;;
+    }
+
+<span class="nc" id="L154">    public static class EntityTypes {</span>
+        public static final String USER = &quot;User&quot;;
+        public static final String BANK_CARD = &quot;BankCard&quot;;
+        public static final String CARD_TRANSACTION = &quot;CardTransaction&quot;;
+        public static final String AUDIT_LOG = &quot;AuditLog&quot;;
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
