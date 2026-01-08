@@ -23,7 +23,6 @@ public class CreateCardRequest {
 
     @NotBlank(message = "Card number is required")
     @Pattern(regexp = "^[0-9]{16}$", message = "Card number must be 16 digits")
-    @CreditCardNumber(message = "Invalid card number")
     private String cardNumber;
 
     @NotNull(message = "Expiry date is required")

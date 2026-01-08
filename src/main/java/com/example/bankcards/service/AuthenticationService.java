@@ -56,7 +56,6 @@ public class AuthenticationService {
                 )
         );
 
-        // Аудит: регистрация пользователя
         auditService.logAction(
                 AuditService.Actions.USER_REGISTERED,
                 AuditService.EntityTypes.USER,
@@ -89,7 +88,6 @@ public class AuthenticationService {
 
         String jwtToken = jwtService.generateToken(userDetails);
 
-        // Аудит: вход пользователя
         auditService.logAction(
                 AuditService.Actions.USER_LOGIN,
                 AuditService.EntityTypes.USER,

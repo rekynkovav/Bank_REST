@@ -77,7 +77,6 @@ class UserCardControllerTest {
                         .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(2))
-                // Используйте cardNumberMasked вместо cardNumber
                 .andExpect(jsonPath("$.content[0].cardNumberMasked").value("123456******3456"))
                 .andExpect(jsonPath("$.content[1].balance").value(500));
     }

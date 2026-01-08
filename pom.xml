@@ -28,6 +28,7 @@
         <jib-maven-plugin.version>3.4.0</jib-maven-plugin.version>
         <jacoco-maven-plugin.BRANCH>0.70</jacoco-maven-plugin.BRANCH>
         <jacoco-maven-plugin.LINE>0.80</jacoco-maven-plugin.LINE>
+        <modelmapper.version>3.2.0</modelmapper.version>
     </properties>
 
     <dependencies>
@@ -87,7 +88,7 @@
         <dependency>
             <groupId>org.modelmapper</groupId>
             <artifactId>modelmapper</artifactId>
-            <version>3.2.0</version>
+            <version>${modelmapper.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>

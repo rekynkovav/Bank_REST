@@ -108,7 +108,6 @@ public class AuditService {
             if (attributes != null) {
                 HttpServletRequest request = attributes.getRequest();
 
-                // Получаем реальный IP за прокси
                 String xForwardedFor = request.getHeader("X-Forwarded-For");
                 if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
                     return xForwardedFor.split(",")[0].trim();

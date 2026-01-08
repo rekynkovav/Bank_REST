@@ -163,7 +163,7 @@ public class CardService {
                     fromCard.getId(), toCard.getId(), request.getAmount(), userId);
 
         } catch (Exception e) {
-            // Аудит: неудачный перевод
+
             auditService.logAction(
                     AuditService.Actions.TRANSFER_FAILED,
                     String.format("Transfer failed: from %d to %d, amount: %s, user: %d, error: %s",
